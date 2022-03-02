@@ -1,0 +1,465 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "8vwnHWR1_lXE"
+   },
+   "outputs": [],
+   "source": [
+    "import itertools\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "import matplotlib.gridspec as gridspec\n",
+    "import pandas as pd\n",
+    "from tqdm.notebook import tqdm\n",
+    "import math\n",
+    "from IPython.display import clear_output\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "_FHI_0zOrzvu"
+   },
+   "outputs": [],
+   "source": [
+    "possible_patterns=list(itertools.product([0,1,2],repeat=5)) #generates a list of the possible patterns for checks"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 73,
+     "resources": {
+      "http://localhost:8080/nbextensions/google.colab/files.js": {
+       "data": "Ly8gQ29weXJpZ2h0IDIwMTcgR29vZ2xlIExMQwovLwovLyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKLy8geW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLgovLyBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXQKLy8KLy8gICAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjAKLy8KLy8gVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZQovLyBkaXN0cmlidXRlZCB1bmRlciB0aGUgTGljZW5zZSBpcyBkaXN0cmlidXRlZCBvbiBhbiAiQVMgSVMiIEJBU0lTLAovLyBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4KLy8gU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZAovLyBsaW1pdGF0aW9ucyB1bmRlciB0aGUgTGljZW5zZS4KCi8qKgogKiBAZmlsZW92ZXJ2aWV3IEhlbHBlcnMgZm9yIGdvb2dsZS5jb2xhYiBQeXRob24gbW9kdWxlLgogKi8KKGZ1bmN0aW9uKHNjb3BlKSB7CmZ1bmN0aW9uIHNwYW4odGV4dCwgc3R5bGVBdHRyaWJ1dGVzID0ge30pIHsKICBjb25zdCBlbGVtZW50ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc3BhbicpOwogIGVsZW1lbnQudGV4dENvbnRlbnQgPSB0ZXh0OwogIGZvciAoY29uc3Qga2V5IG9mIE9iamVjdC5rZXlzKHN0eWxlQXR0cmlidXRlcykpIHsKICAgIGVsZW1lbnQuc3R5bGVba2V5XSA9IHN0eWxlQXR0cmlidXRlc1trZXldOwogIH0KICByZXR1cm4gZWxlbWVudDsKfQoKLy8gTWF4IG51bWJlciBvZiBieXRlcyB3aGljaCB3aWxsIGJlIHVwbG9hZGVkIGF0IGEgdGltZS4KY29uc3QgTUFYX1BBWUxPQURfU0laRSA9IDEwMCAqIDEwMjQ7CgpmdW5jdGlvbiBfdXBsb2FkRmlsZXMoaW5wdXRJZCwgb3V0cHV0SWQpIHsKICBjb25zdCBzdGVwcyA9IHVwbG9hZEZpbGVzU3RlcChpbnB1dElkLCBvdXRwdXRJZCk7CiAgY29uc3Qgb3V0cHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKG91dHB1dElkKTsKICAvLyBDYWNoZSBzdGVwcyBvbiB0aGUgb3V0cHV0RWxlbWVudCB0byBtYWtlIGl0IGF2YWlsYWJsZSBmb3IgdGhlIG5leHQgY2FsbAogIC8vIHRvIHVwbG9hZEZpbGVzQ29udGludWUgZnJvbSBQeXRob24uCiAgb3V0cHV0RWxlbWVudC5zdGVwcyA9IHN0ZXBzOwoKICByZXR1cm4gX3VwbG9hZEZpbGVzQ29udGludWUob3V0cHV0SWQpOwp9CgovLyBUaGlzIGlzIHJvdWdobHkgYW4gYXN5bmMgZ2VuZXJhdG9yIChub3Qgc3VwcG9ydGVkIGluIHRoZSBicm93c2VyIHlldCksCi8vIHdoZXJlIHRoZXJlIGFyZSBtdWx0aXBsZSBhc3luY2hyb25vdXMgc3RlcHMgYW5kIHRoZSBQeXRob24gc2lkZSBpcyBnb2luZwovLyB0byBwb2xsIGZvciBjb21wbGV0aW9uIG9mIGVhY2ggc3RlcC4KLy8gVGhpcyB1c2VzIGEgUHJvbWlzZSB0byBibG9jayB0aGUgcHl0aG9uIHNpZGUgb24gY29tcGxldGlvbiBvZiBlYWNoIHN0ZXAsCi8vIHRoZW4gcGFzc2VzIHRoZSByZXN1bHQgb2YgdGhlIHByZXZpb3VzIHN0ZXAgYXMgdGhlIGlucHV0IHRvIHRoZSBuZXh0IHN0ZXAuCmZ1bmN0aW9uIF91cGxvYWRGaWxlc0NvbnRpbnVlKG91dHB1dElkKSB7CiAgY29uc3Qgb3V0cHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKG91dHB1dElkKTsKICBjb25zdCBzdGVwcyA9IG91dHB1dEVsZW1lbnQuc3RlcHM7CgogIGNvbnN0IG5leHQgPSBzdGVwcy5uZXh0KG91dHB1dEVsZW1lbnQubGFzdFByb21pc2VWYWx1ZSk7CiAgcmV0dXJuIFByb21pc2UucmVzb2x2ZShuZXh0LnZhbHVlLnByb21pc2UpLnRoZW4oKHZhbHVlKSA9PiB7CiAgICAvLyBDYWNoZSB0aGUgbGFzdCBwcm9taXNlIHZhbHVlIHRvIG1ha2UgaXQgYXZhaWxhYmxlIHRvIHRoZSBuZXh0CiAgICAvLyBzdGVwIG9mIHRoZSBnZW5lcmF0b3IuCiAgICBvdXRwdXRFbGVtZW50Lmxhc3RQcm9taXNlVmFsdWUgPSB2YWx1ZTsKICAgIHJldHVybiBuZXh0LnZhbHVlLnJlc3BvbnNlOwogIH0pOwp9CgovKioKICogR2VuZXJhdG9yIGZ1bmN0aW9uIHdoaWNoIGlzIGNhbGxlZCBiZXR3ZWVuIGVhY2ggYXN5bmMgc3RlcCBvZiB0aGUgdXBsb2FkCiAqIHByb2Nlc3MuCiAqIEBwYXJhbSB7c3RyaW5nfSBpbnB1dElkIEVsZW1lbnQgSUQgb2YgdGhlIGlucHV0IGZpbGUgcGlja2VyIGVsZW1lbnQuCiAqIEBwYXJhbSB7c3RyaW5nfSBvdXRwdXRJZCBFbGVtZW50IElEIG9mIHRoZSBvdXRwdXQgZGlzcGxheS4KICogQHJldHVybiB7IUl0ZXJhYmxlPCFPYmplY3Q+fSBJdGVyYWJsZSBvZiBuZXh0IHN0ZXBzLgogKi8KZnVuY3Rpb24qIHVwbG9hZEZpbGVzU3RlcChpbnB1dElkLCBvdXRwdXRJZCkgewogIGNvbnN0IGlucHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGlucHV0SWQpOwogIGlucHV0RWxlbWVudC5kaXNhYmxlZCA9IGZhbHNlOwoKICBjb25zdCBvdXRwdXRFbGVtZW50ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQob3V0cHV0SWQpOwogIG91dHB1dEVsZW1lbnQuaW5uZXJIVE1MID0gJyc7CgogIGNvbnN0IHBpY2tlZFByb21pc2UgPSBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4gewogICAgaW5wdXRFbGVtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2NoYW5nZScsIChlKSA9PiB7CiAgICAgIHJlc29sdmUoZS50YXJnZXQuZmlsZXMpOwogICAgfSk7CiAgfSk7CgogIGNvbnN0IGNhbmNlbCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2J1dHRvbicpOwogIGlucHV0RWxlbWVudC5wYXJlbnRFbGVtZW50LmFwcGVuZENoaWxkKGNhbmNlbCk7CiAgY2FuY2VsLnRleHRDb250ZW50ID0gJ0NhbmNlbCB1cGxvYWQnOwogIGNvbnN0IGNhbmNlbFByb21pc2UgPSBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4gewogICAgY2FuY2VsLm9uY2xpY2sgPSAoKSA9PiB7CiAgICAgIHJlc29sdmUobnVsbCk7CiAgICB9OwogIH0pOwoKICAvLyBXYWl0IGZvciB0aGUgdXNlciB0byBwaWNrIHRoZSBmaWxlcy4KICBjb25zdCBmaWxlcyA9IHlpZWxkIHsKICAgIHByb21pc2U6IFByb21pc2UucmFjZShbcGlja2VkUHJvbWlzZSwgY2FuY2VsUHJvbWlzZV0pLAogICAgcmVzcG9uc2U6IHsKICAgICAgYWN0aW9uOiAnc3RhcnRpbmcnLAogICAgfQogIH07CgogIGNhbmNlbC5yZW1vdmUoKTsKCiAgLy8gRGlzYWJsZSB0aGUgaW5wdXQgZWxlbWVudCBzaW5jZSBmdXJ0aGVyIHBpY2tzIGFyZSBub3QgYWxsb3dlZC4KICBpbnB1dEVsZW1lbnQuZGlzYWJsZWQgPSB0cnVlOwoKICBpZiAoIWZpbGVzKSB7CiAgICByZXR1cm4gewogICAgICByZXNwb25zZTogewogICAgICAgIGFjdGlvbjogJ2NvbXBsZXRlJywKICAgICAgfQogICAgfTsKICB9CgogIGZvciAoY29uc3QgZmlsZSBvZiBmaWxlcykgewogICAgY29uc3QgbGkgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdsaScpOwogICAgbGkuYXBwZW5kKHNwYW4oZmlsZS5uYW1lLCB7Zm9udFdlaWdodDogJ2JvbGQnfSkpOwogICAgbGkuYXBwZW5kKHNwYW4oCiAgICAgICAgYCgke2ZpbGUudHlwZSB8fCAnbi9hJ30pIC0gJHtmaWxlLnNpemV9IGJ5dGVzLCBgICsKICAgICAgICBgbGFzdCBtb2RpZmllZDogJHsKICAgICAgICAgICAgZmlsZS5sYXN0TW9kaWZpZWREYXRlID8gZmlsZS5sYXN0TW9kaWZpZWREYXRlLnRvTG9jYWxlRGF0ZVN0cmluZygpIDoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJ24vYSd9IC0gYCkpOwogICAgY29uc3QgcGVyY2VudCA9IHNwYW4oJzAlIGRvbmUnKTsKICAgIGxpLmFwcGVuZENoaWxkKHBlcmNlbnQpOwoKICAgIG91dHB1dEVsZW1lbnQuYXBwZW5kQ2hpbGQobGkpOwoKICAgIGNvbnN0IGZpbGVEYXRhUHJvbWlzZSA9IG5ldyBQcm9taXNlKChyZXNvbHZlKSA9PiB7CiAgICAgIGNvbnN0IHJlYWRlciA9IG5ldyBGaWxlUmVhZGVyKCk7CiAgICAgIHJlYWRlci5vbmxvYWQgPSAoZSkgPT4gewogICAgICAgIHJlc29sdmUoZS50YXJnZXQucmVzdWx0KTsKICAgICAgfTsKICAgICAgcmVhZGVyLnJlYWRBc0FycmF5QnVmZmVyKGZpbGUpOwogICAgfSk7CiAgICAvLyBXYWl0IGZvciB0aGUgZGF0YSB0byBiZSByZWFkeS4KICAgIGxldCBmaWxlRGF0YSA9IHlpZWxkIHsKICAgICAgcHJvbWlzZTogZmlsZURhdGFQcm9taXNlLAogICAgICByZXNwb25zZTogewogICAgICAgIGFjdGlvbjogJ2NvbnRpbnVlJywKICAgICAgfQogICAgfTsKCiAgICAvLyBVc2UgYSBjaHVua2VkIHNlbmRpbmcgdG8gYXZvaWQgbWVzc2FnZSBzaXplIGxpbWl0cy4gU2VlIGIvNjIxMTU2NjAuCiAgICBsZXQgcG9zaXRpb24gPSAwOwogICAgZG8gewogICAgICBjb25zdCBsZW5ndGggPSBNYXRoLm1pbihmaWxlRGF0YS5ieXRlTGVuZ3RoIC0gcG9zaXRpb24sIE1BWF9QQVlMT0FEX1NJWkUpOwogICAgICBjb25zdCBjaHVuayA9IG5ldyBVaW50OEFycmF5KGZpbGVEYXRhLCBwb3NpdGlvbiwgbGVuZ3RoKTsKICAgICAgcG9zaXRpb24gKz0gbGVuZ3RoOwoKICAgICAgY29uc3QgYmFzZTY0ID0gYnRvYShTdHJpbmcuZnJvbUNoYXJDb2RlLmFwcGx5KG51bGwsIGNodW5rKSk7CiAgICAgIHlpZWxkIHsKICAgICAgICByZXNwb25zZTogewogICAgICAgICAgYWN0aW9uOiAnYXBwZW5kJywKICAgICAgICAgIGZpbGU6IGZpbGUubmFtZSwKICAgICAgICAgIGRhdGE6IGJhc2U2NCwKICAgICAgICB9LAogICAgICB9OwoKICAgICAgbGV0IHBlcmNlbnREb25lID0gZmlsZURhdGEuYnl0ZUxlbmd0aCA9PT0gMCA/CiAgICAgICAgICAxMDAgOgogICAgICAgICAgTWF0aC5yb3VuZCgocG9zaXRpb24gLyBmaWxlRGF0YS5ieXRlTGVuZ3RoKSAqIDEwMCk7CiAgICAgIHBlcmNlbnQudGV4dENvbnRlbnQgPSBgJHtwZXJjZW50RG9uZX0lIGRvbmVgOwoKICAgIH0gd2hpbGUgKHBvc2l0aW9uIDwgZmlsZURhdGEuYnl0ZUxlbmd0aCk7CiAgfQoKICAvLyBBbGwgZG9uZS4KICB5aWVsZCB7CiAgICByZXNwb25zZTogewogICAgICBhY3Rpb246ICdjb21wbGV0ZScsCiAgICB9CiAgfTsKfQoKc2NvcGUuZ29vZ2xlID0gc2NvcGUuZ29vZ2xlIHx8IHt9OwpzY29wZS5nb29nbGUuY29sYWIgPSBzY29wZS5nb29nbGUuY29sYWIgfHwge307CnNjb3BlLmdvb2dsZS5jb2xhYi5fZmlsZXMgPSB7CiAgX3VwbG9hZEZpbGVzLAogIF91cGxvYWRGaWxlc0NvbnRpbnVlLAp9Owp9KShzZWxmKTsK",
+       "headers": [
+        [
+         "content-type",
+         "application/javascript"
+        ]
+       ],
+       "ok": true,
+       "status": 200,
+       "status_text": ""
+      }
+     }
+    },
+    "id": "N-tQNsBxr4Yo",
+    "outputId": "bdf4eb4e-d4d6-48fa-aa31-b33016584252"
+   },
+   "outputs": [],
+   "source": [
+    "checkvecs_LUT=np.load('checkvecs.npy') #loads previously calculated lookup table"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "X65mJJX5sqL0"
+   },
+   "outputs": [],
+   "source": [
+    "dict1=pd.read_csv('d5l.csv',encoding='latin-1',header=None).drop_duplicates() #loads dictionary"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def indexof(string,char):\n",
+    "    indices = [i for i, c in enumerate(string) if c == char]\n",
+    "    return indices"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def check_alt(guess,solution):#Main word check function\n",
+    "    for i in guess:\n",
+    "        ocurrencias_guess=indexof(guess,i)\n",
+    "        ocurrencias_solution=indexof(solution,i)\n",
+    "        if len(ocurrencias_guess)<=len(ocurrencias_solution):\n",
+    "            if ocurrencias_guess==ocurrencias_solution:\n",
+    "                for j in ocurrencias_guess:\n",
+    "                    checkvec[j]=1\n",
+    "            else:\n",
+    "                coincidences=[j for j in ocurrencias_guess if j in ocurrencias_solution]\n",
+    "                notcoincidences=[j for j in ocurrencias_guess if j not in ocurrencias_solution]\n",
+    "                for j in coincidences:\n",
+    "                    checkvec[j]=1\n",
+    "                for j in notcoincidences:\n",
+    "                    checkvec[j]=2\n",
+    "        if len(ocurrencias_guess)>len(ocurrencias_solution):\n",
+    "            k=0\n",
+    "            coincidences=[j for j in ocurrencias_guess if j in ocurrencias_solution]\n",
+    "            notcoincidences=[j for j in ocurrencias_guess if j not in ocurrencias_solution]\n",
+    "            for j in coincidences:\n",
+    "                    checkvec[j]=1\n",
+    "                    k+=1\n",
+    "            for j in notcoincidences:\n",
+    "                if k<len(ocurrencias_solution):\n",
+    "                    checkvec[j]=2\n",
+    "                    k+=1\n",
+    "                else:\n",
+    "                    continue\n",
+    "    return checkvec\n",
+    "        \n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def stats(dict1):\n",
+    "    letras='abcdefghijklmnopqrstuvwxyzñ'\n",
+    "    contador=np.zeros(len(letras),dtype=int)\n",
+    "    length=dict1.size\n",
+    "    for i in dict1[0]:\n",
+    "        for j in ''.join(set(i)):\n",
+    "            try:\n",
+    "                contador[letras.index(j)]+=i.count(j)\n",
+    "            except:\n",
+    "                continue\n",
+    "    return list(sorted(zip(letras,list(contador)),key=lambda x: x[1],reverse=True))\n",
+    "            \n",
+    "        "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# checkvecs_LUT=np.zeros((dict1.size,dict1.size,5))#checkvecs_LUT creation routine\n",
+    "# for i,guess in enumerate(tqdm(dict1[0])):\n",
+    "#     for j,word in enumerate (dict1[0]):\n",
+    "# #         print(guess,word)\n",
+    "#         checkvecs_LUT[i,j,:]= check_alt(guess,word)\n",
+    "# #         checkvecs_LUT= possible_guesses(guess,check(guess,word),dict1)[1]\n",
+    "# #         print(checkvecs_LUT)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def rowindexof(word,dict1):\n",
+    "    return dict1.index[dict1[0]==word].tolist()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def possibleguessesvec(word,checkvec,dict1,checkvecs_LUT):#Dictionary filter function. returns alist of possible words after a guess. checkvec is the vector after checking. Checkvec_LUT is the lookup table generated before.\n",
+    "    index=rowindexof(word,dict1)[0]\n",
+    "    possiblewords=[]\n",
+    "    for c,i in enumerate(checkvecs_LUT[index,:]):\n",
+    "        if (i==checkvec).all():\n",
+    "            possiblewords.append(dict1[0].iloc[c])\n",
+    "    return possiblewords"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def numberpossibleguessesvec(word,checkvec,dict1,checkvecs_LUT):#returns number of remaining words after a guess\n",
+    "    index=rowindexof(word,dict1)[0]\n",
+    "    possiblewords=0\n",
+    "    for c,i in enumerate(checkvecs_LUT[index,:]):\n",
+    "        if (i==checkvec).all():\n",
+    "            possiblewords+=1\n",
+    "    return possiblewords"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def exp_info_word(word,possible_patterns,dict1,checkvecs_LUT): #entropy calculation function\n",
+    "    accum=0\n",
+    "    for i in possible_patterns:\n",
+    "        px=numberpossibleguessesvec(word,i,dict1,checkvecs_LUT)/dict1.size\n",
+    "        if px>0:\n",
+    "            accum+=(px)*math.log2(1/px)\n",
+    "    return accum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def step():\n",
+    "    print('Ingresar la palabra que pusiste en wordle \\n Ingresá quit para salir')\n",
+    "    word=input()\n",
+    "    if word=='quit':\n",
+    "            return 0\n",
+    "    print('ingresá el vector que te devolvió \\n (gris = 0, verde=1,amarillo =2, ejemplo: si te devolvió gris,gris,gris,amarillo,verde, el vector es 0,0,0,2,1')\n",
+    "    asd=input()\n",
+    "    if asd=='quit':\n",
+    "            return 0\n",
+    "    checkvec=list(map(int, asd.split(',')))\n",
+    "    return (word,checkvec)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def game(dict1,checkvecs_LUT): # container function to solve steps in a loop\n",
+    "    word,checkvec=step()\n",
+    "    if word=='quit':\n",
+    "            return 0\n",
+    "    res=possibleguessesvec(word,checkvec,dict1,checkvecs_LUT)\n",
+    "    numb=numberpossibleguessesvec(word,checkvec,dict1,checkvecs_LUT)\n",
+    "    print(f'hay {numb} palabras posibles y son:')\n",
+    "    print(res)\n",
+    "    \n",
+    "    while True:\n",
+    "        word,checkvec=step()\n",
+    "        if word=='quit':\n",
+    "            break\n",
+    "        words=list(set(res).intersection(set(possibleguessesvec(word,checkvec,dict1,checkvecs_LUT)))).sort()\n",
+    "        if word in words:\n",
+    "            words.remove(word)\n",
+    "        numb=len(words)\n",
+    "        res=pd.Series(words)\n",
+    "        print(f'hay {numb} palabras posibles y son:')\n",
+    "        print(words)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "game(dict1,checkvecs_LUT)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# new_dict=[]\n",
+    "# for i in dict1[0]:\n",
+    "#     if len(set(i))==5:\n",
+    "#         new_dict.append(i)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# rank = pd.DataFrame([[1, 'b',0], [2, 'a',0]],\n",
+    "\n",
+    "#                    columns=['index', 'word','information']) #entropy calculation routine\n",
+    "# for c,word in enumerate(tqdm(new_dict)):\n",
+    "    \n",
+    "#     info=exp_info_word(word,possible_patterns,dict1,checkvecs)\n",
+    "#     new=pd.DataFrame({'index': [c], 'word': [word],'information':[info]})\n",
+    "#     rank=pd.concat([rank,new])\n",
+    "#     rank=rank.sort_values(by=['information'],ascending=False)\n",
+    "#     print(rank.head(10))  \n",
+    "    \n",
+    "# rank.sort_values(by=['information'],ascending=False)    \n",
+    "# rank.head(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "F7TOBxtTrqAf"
+   },
+   "outputs": [],
+   "source": [
+    "# def check(guess,solution):#old check function\n",
+    "#     checkvec=[]\n",
+    "#     checkvec2=[]\n",
+    "#     checked_letters=[]\n",
+    "#     for i in guess:\n",
+    "#         if i not in checked_letters:\n",
+    "#             if i not in solution:\n",
+    "#                 checkvec.append(0)\n",
+    "#             elif guess.index(i)==solution.index(i):\n",
+    "#                 checkvec.append(1)\n",
+    "#             else: checkvec.append(2)\n",
+    "#         else: \n",
+    "#             if i not in solution.replace(i,'-',checked_letters.count(i)):\n",
+    "#                 checkvec.append(0)\n",
+    "#             elif guess.replace(i,'-',checked_letters.count(i)).index(i)==solution.replace(i,'-',checked_letters.count(i)).index(i):\n",
+    "#                 checkvec.append(1)\n",
+    "#             else:\n",
+    "#                 checkvec.append(2) \n",
+    "#         checked_letters.append(i)\n",
+    "    \n",
+    "\n",
+    "#     return tuple(checkvec)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "-adeZv-uvo7L"
+   },
+   "outputs": [],
+   "source": [
+    "# def possible_guesses(guess,checkvec,dict1):#old filter function\n",
+    "#         guessvector=zip(guess,checkvec)\n",
+    "#         sm=softmatches(guess,checkvec)\n",
+    "#         nm=nonmatches(guess,checkvec)\n",
+    "#         nm2=nm\n",
+    "\n",
+    "#         for i in nm:\n",
+    "#             if i in sm or i in regexpgen(guess,checkvec):\n",
+    "#                 nm2=nm2.replace(i,'1')\n",
+    "#         possible_words= dict1[dict1[0].str.fullmatch(regexpgen(guess,checkvec))]\n",
+    "#         for i in sm:\n",
+    "#             possible_words= possible_words[possible_words[0].str.contains(i)]\n",
+    "#         for i in nm2:\n",
+    "#             possible_words= possible_words[~possible_words[0].str.contains(i)]\n",
+    "#   #print(f'Intentamos con {guess} \\n Resultó en {checkvec} \\n Las palabras posibles son \\n {possible_words[0]} ')\n",
+    "#         return [possible_words,int(possible_words.shape[0])]\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 35
+    },
+    "id": "jkws4rMoy2_e",
+    "outputId": "a204a7e6-bad2-4cea-80d9-b2d5a3749543"
+   },
+   "outputs": [],
+   "source": [
+    "# def regexpgen(guess,checkvec):#accesory function for possible_guesses\n",
+    "#   guessvector=zip(guess,checkvec)\n",
+    "#   regexp=''\n",
+    "#   for i,j in guessvector:\n",
+    "#     if j==0 or j==2:\n",
+    "#       regexp+='.'\n",
+    "#     elif j==1:\n",
+    "#       regexp+=i\n",
+    "#   return regexp\n",
+    "# regexpgen('adboo',(0,0,1,2,0))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 35
+    },
+    "id": "hRfZgjAV2b4Z",
+    "outputId": "d397051c-58d0-40b0-b03c-5b60e9f8024d"
+   },
+   "outputs": [],
+   "source": [
+    "# def softmatches(guess,checkvec):#accesory function for possible_guesses\n",
+    "#   guessvector=zip(guess,checkvec)\n",
+    "#   regexp=''\n",
+    "#   for i,j in guessvector:\n",
+    "#     if j==2:\n",
+    "#       regexp+=i\n",
+    "     \n",
+    "#   return regexp\n",
+    "\n",
+    "# softmatches('adboo',(0,1,2,0,0))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "id": "q7p_MPz1JAfA"
+   },
+   "outputs": [],
+   "source": [
+    "# def nonmatches(guess,checkvec):#accesory function for possible_guesses\n",
+    "#     guessvector=zip(guess,checkvec)\n",
+    "#     regexp=''\n",
+    "#     for i,j in guessvector:\n",
+    "#       if j==0:\n",
+    "#        regexp+=i\n",
+    "     \n",
+    "  \n",
+    "#     if regexp=='':\n",
+    "#       regexp='1' \n",
+    "  \n",
+    "\n",
+    "     \n",
+    "#     return regexp\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "colab": {
+   "name": "wordle checker.ipynb",
+   "provenance": []
+  },
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
